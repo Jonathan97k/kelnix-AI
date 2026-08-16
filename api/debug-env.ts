@@ -8,8 +8,11 @@ export default function handler(_req: VercelRequest, res: VercelResponse) {
   const openCodeModel = process.env.OPENCODE_MODEL ?? '';
   const appUrl = process.env.APP_URL ?? '';
 
-  // Loose format check for Gemini AIza key (legacy format) ~39 chars
-  const geminiKeyLooksValid = geminiKey.startsWith('AIza') && geminiKey.length >= 35 && geminiKey.length <= 45;
+  // Gemini keys can start with either 'AIza' (legacy) or 'AQ.' (newer format)
+  // Typical lengths: legacy ~39 chars, newer format varies but usually 50-100+ chars
+  const geminiKeyLooksValid = 
+    (geminiKey.startsWith('AIza') && geminiKey.length >= 35 && geminiKey.length <= 45) ||
+    (geminiKey.startsWith('AQ.') && geminiKey.length >= 30); // AQ. keys tend to be longer
 
   res.json({
     GEMINI_API_KEY: !!geminiKey,
