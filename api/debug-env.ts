@@ -1,7 +1,7 @@
 // TODO: Remove this debug endpoint once environment variable issue is resolved.
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-export default async function handler(_req: VercelRequest, res: VercelResponse) {
+export default function handler(_req: VercelRequest, res: VercelResponse) {
   const geminiKey = process.env.GEMINI_API_KEY ?? '';
   const openCodeKey = process.env.OPENCODE_API_KEY ?? '';
   const openCodeBaseUrl = process.env.OPENCODE_BASE_URL ?? '';
