@@ -13,6 +13,7 @@ import {
   FileSearch,
   Type,
 } from 'lucide-react';
+import { postJson } from '../services/api/apiClient';
 
 interface ResearchSourceItem {
   title: string;
@@ -62,16 +63,8 @@ export const ResearchPanel: React.FC<ResearchPanelProps> = ({ isOpen, onClose, o
     setResult(null);
 
     try {
-      const response = await fetch('/api/research', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: searchQuery, maxResults: 5 }),
-      });
-      const data = await response.json();
-      if (!data.success) {
-        throw new Error(data.error || 'Research failed');
-      }
-      setResult(data.data);
+      const data = await postJson<ResearchResult>('/api/research', { query: searchQuery, maxResults: 5 });
+      setResult(data);
     } catch (err: any) {
       console.error(err);
       setErrorMsg(err.message || 'Error contacting research service');

@@ -464,7 +464,7 @@ function drawBranding(ctx: CanvasRenderingContext2D, w: number, h: number) {
   ctx.font = 'bold 20px system-ui, sans-serif';
   ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
   ctx.textAlign = 'right';
-  ctx.fillText('ReelCraft AI', w - 40, h - 35);
+  ctx.fillText('Kelnix AI', w - 40, h - 35);
   ctx.restore();
 }
 

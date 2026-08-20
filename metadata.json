@@ -1,6 +1,6 @@
 {
-  "name": "ReelCraft - AI Photo Reel Generator",
-  "description": "Transform photos into cinematic vertical reels with AI scripts, beat-synced transitions, audio tracks, kinetic captions, and video export.",
+  "name": "Kelnix AI - Your AI Content Manager",
+  "description": "Create, manage and automate professional social media content with AI-powered tools.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

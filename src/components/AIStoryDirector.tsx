@@ -17,6 +17,7 @@ import {
   Bot
 } from 'lucide-react';
 import { PhotoSlide, ReelConfig, TransitionType, ClientProfile } from '../types';
+import { postJson } from '../services/api/apiClient';
 
 interface AIStoryDirectorProps {
   isOpen: boolean;
@@ -79,25 +80,16 @@ export const AIStoryDirector: React.FC<AIStoryDirectorProps> = ({
     setErrorMsg(null);
 
     try {
-      const response = await fetch('/api/generate-script', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          theme: selectedTheme,
-          tone: selectedTone,
-          photoCount: slides.length,
-          photoDescriptions: slides.map((s, idx) => `Slide ${idx + 1}: ${s.name || s.caption || (s.mediaType === 'video' ? 'Video Scene' : 'Photo')}`),
-          customPrompt,
-          clientProfile: activeClient,
-        }),
+      const data = await postJson<any>('/api/generate-script', {
+        theme: selectedTheme,
+        tone: selectedTone,
+        photoCount: slides.length,
+        photoDescriptions: slides.map((s, idx) => `Slide ${idx + 1}: ${s.name || s.caption || (s.mediaType === 'video' ? 'Video Scene' : 'Photo')}`),
+        customPrompt,
+        clientProfile: activeClient,
       });
 
-      const data = await response.json();
-      if (!data.success) {
-        throw new Error(data.error || 'Failed to generate');
-      }
-
-      setGeneratedResult(data.data);
+      setGeneratedResult(data);
     } catch (err: any) {
       console.error(err);
       setErrorMsg(err.message || 'Error communicating with AI director');
@@ -120,15 +112,9 @@ export const AIStoryDirector: React.FC<AIStoryDirectorProps> = ({
         }
       }
 
-      const response = await fetch('/api/analyze-photos', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ images: imagePayloads }),
-      });
-
-      const data = await response.json();
-      if (data.success && data.data) {
-        const d = data.data;
+      const data = await postJson<any>('/api/analyze-photos', { images: imagePayloads });
+      if (data) {
+        const d = data;
         if (d.detectedTheme) setSelectedTheme(d.detectedTheme);
         if (d.suggestedCaptions && d.suggestedCaptions.length) {
           setCustomPrompt(`Detected visual elements: ${d.detectedTheme} (${d.detectedVibe}). Make captions fit these photos accurately.`);

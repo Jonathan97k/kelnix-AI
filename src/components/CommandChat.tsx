@@ -10,6 +10,7 @@ import {
   Wand2,
 } from 'lucide-react';
 import { PhotoSlide, ReelConfig } from '../types';
+import { postJson } from '../services/api/apiClient';
 
 interface ChatMessage {
   role: 'user' | 'assistant';
@@ -85,48 +86,36 @@ export const CommandChat: React.FC<CommandChatProps> = ({
             break;
 
           case 'generate_script': {
-            const response = await fetch('/api/generate-script', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                theme: params.theme || theme,
-                tone: params.tone || tone,
-                photoCount: slideCount,
-                photoDescriptions: Array.from(
-                  { length: slideCount },
-                  (_, i) => `Slide ${i + 1}: Photo scene`
-                ),
-                customPrompt: params.customPrompt || '',
-              }),
+            const script = await postJson<any>('/api/generate-script', {
+              theme: params.theme || theme,
+              tone: params.tone || tone,
+              photoCount: slideCount,
+              photoDescriptions: Array.from(
+                { length: slideCount },
+                (_, i) => `Slide ${i + 1}: Photo scene`
+              ),
+              customPrompt: params.customPrompt || '',
             });
-            const data = await response.json();
-            if (!data.success) throw new Error(data.error || 'Script generation failed');
-            onApplyScript(data.data);
+            onApplyScript(script);
             pushMsg(
               'assistant',
-              `✅ Script applied — "${data.data.title}" is now your reel. Captions, narration, hashtags & pacing were updated.`
+              `Script applied - "${script.title}" is now your reel. Captions, narration, hashtags and pacing were updated.`
             );
             break;
           }
 
           case 'research': {
-            const response = await fetch('/api/research', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ query: params.query || '', maxResults: 5 }),
-            });
-            const data = await response.json();
-            if (!data.success) throw new Error(data.error || 'Research failed');
+            const research = await postJson<any>('/api/research', { query: params.query || '', maxResults: 5 });
             const total =
-              (data.data?.sources?.web?.length || 0) +
-              (data.data?.sources?.news?.length || 0) +
-              (data.data?.sources?.wikipedia?.length || 0);
-            const answer = data.data?.answer;
+              (research?.sources?.web?.length || 0) +
+              (research?.sources?.news?.length || 0) +
+              (research?.sources?.wikipedia?.length || 0);
+            const answer = research?.answer;
             pushMsg(
               'assistant',
               answer
-                ? `🔎 Research on "${data.data.query}" (${total} sources):\n\n${answer}`
-                : `🔎 Found ${total} results for "${data.data?.query}" — open the Research panel to browse them.`
+                ? `Research on "${research.query}" (${total} sources):\n\n${answer}`
+                : `Found ${total} results for "${research?.query}" - open the Research panel to browse them.`
             );
             break;
           }
@@ -171,19 +160,13 @@ export const CommandChat: React.FC<CommandChatProps> = ({
     setStatusText('Thinking…');
 
     try {
-      const response = await fetch('/api/chat-command', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: msgText,
-          context: { slideCount, theme, tone, aspectRatio, title },
-        }),
+      const data = await postJson<any>('/api/chat-command', {
+        message: msgText,
+        context: { slideCount, theme, tone, aspectRatio, title },
       });
-      const data = await response.json();
-      if (!data.success) throw new Error(data.error || 'Command failed');
 
-      if (data.data.reply) pushMsg('assistant', data.data.reply);
-      await executeActions(data.data.actions || []);
+      if (data.reply) pushMsg('assistant', data.reply);
+      await executeActions(data.actions || []);
     } catch (e: any) {
       console.error(e);
       pushMsg('assistant', `⚠️ ${e.message}`);
@@ -301,7 +284,7 @@ export const CommandChat: React.FC<CommandChatProps> = ({
           </div>
           <div className="flex items-center justify-between mt-2.5">
             <p className="text-[10px] text-slate-600">
-              Powered by Gemini AI · actions run inside ReelCraft automatically
+              Powered by Gemini AI � actions run inside Kelnix AI automatically
             </p>
             <Wand2 className="w-3.5 h-3.5 text-slate-600" />
           </div>

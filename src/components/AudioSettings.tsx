@@ -56,7 +56,7 @@ export const AudioSettings: React.FC<AudioSettingsProps> = ({
 
   const handleTestVoice = () => {
     audioEngine.speakNarration(
-      'Welcome to ReelCraft. Transform your photos into viral stories with artificial intelligence.',
+      'Welcome to Kelnix AI. Transform your photos into viral stories with artificial intelligence.',
       config.voiceName
     );
   };

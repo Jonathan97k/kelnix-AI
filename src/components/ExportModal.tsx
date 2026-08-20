@@ -38,8 +38,14 @@ export const ExportModal: React.FC<ExportModalProps> = ({
   if (!isOpen) return null;
 
   const totalDuration = slides.reduce((acc, s) => acc + s.duration, 0);
+  const unresolvedSlides = slides.filter((slide) => slide.isPlaceholder || !slide.url);
 
   const handleStartExport = async () => {
+    if (unresolvedSlides.length > 0) {
+      setStatusText(`${unresolvedSlides.length} scene(s) still need real media before export.`);
+      return;
+    }
+
     setIsRendering(true);
     setProgress(0.01);
     setStatusText('Initializing video rendering engine...');
@@ -176,6 +182,12 @@ export const ExportModal: React.FC<ExportModalProps> = ({
           )}
 
           {/* Render Progress Bar & Status */}
+          {unresolvedSlides.length > 0 && !exportedBlob && !isRendering && (
+            <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-200">
+              Attach media to {unresolvedSlides.length} placeholder scene{unresolvedSlides.length === 1 ? '' : 's'} before exporting. AI has created the scene plan, but it has not generated images or videos.
+            </div>
+          )}
+
           {(isRendering || exportedBlob) && (
             <div className="bg-slate-950/80 p-5 rounded-2xl border border-purple-500/30 space-y-3">
               <div className="flex items-center justify-between text-xs">

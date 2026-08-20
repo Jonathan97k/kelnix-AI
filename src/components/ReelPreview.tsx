@@ -248,7 +248,16 @@ export const ReelPreview: React.FC<ReelPreviewProps> = ({
 
         {/* The Slide Media Layer (Photo or Video) with Ken Burns Motion & CSS Filter */}
         <div className="w-full h-full bg-black relative overflow-hidden flex items-center justify-center">
-          {currentSlide.mediaType === 'video' ? (
+          {currentSlide.isPlaceholder ? (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-gradient-to-br from-slate-800 via-slate-900 to-black px-8 text-center">
+              <Layers className="h-12 w-12 text-emerald-400" />
+              <div>
+                <p className="text-lg font-bold text-white">Scene {currentSlide.generatedSceneNumber || currentSlideIndex + 1}</p>
+                <p className="mt-2 text-sm text-slate-300">Add media from your library to bring this scene to life.</p>
+                {currentSlide.visualDescription && <p className="mt-4 max-w-sm text-xs leading-relaxed text-slate-400">{currentSlide.visualDescription}</p>}
+              </div>
+            </div>
+          ) : currentSlide.mediaType === 'video' ? (
             <video
               src={currentSlide.url}
               className="w-full h-full object-cover will-change-transform transition-transform duration-100 ease-linear"

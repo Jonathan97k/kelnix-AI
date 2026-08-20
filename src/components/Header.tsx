@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { 
   Clapperboard, 
   Sparkles, 
@@ -61,10 +61,8 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-base font-bold text-white tracking-tight">ReelCraft</h1>
-            <span className="text-[10px] font-semibold bg-rose-500/20 text-rose-300 border border-rose-500/30 px-1.5 py-0.5 rounded-full">
-              AI ENGINE
-            </span>
+            <h1 className="text-base font-bold text-white tracking-tight">Kelnix AI</h1>
+            <span className="text-[10px] font-semibold bg-rose-500/20 text-rose-300 border border-rose-500/30 px-1.5 py-0.5 rounded-full">Your AI Content Manager</span>
           </div>
           <p className="text-xs text-slate-400 hidden sm:block">
             {totalSlides} Photos • {totalDuration.toFixed(1)}s Reel • {config.musicTrack.bpm} BPM
@@ -231,3 +229,4 @@ export const Header: React.FC<HeaderProps> = ({
     </header>
   );
 };
+

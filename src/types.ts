@@ -74,6 +74,9 @@ export interface PhotoSlide {
   id: string;
   url: string;
   mediaType?: MediaType;
+  isPlaceholder?: boolean;
+  visualDescription?: string;
+  generatedSceneNumber?: number;
   videoVolume?: number; // 0 to 1
   videoTrimStart?: number; // in seconds
   videoTrimEnd?: number; // in seconds
@@ -109,6 +112,8 @@ export interface MusicTrack {
   bpm: number;
   mood: string;
   color: string;
+  url?: string;
+  name?: string;
 }
 
 export type OverlayEffect = 'none' | 'film-grain' | 'vhs-scanlines' | 'light-leak' | 'dust-scratches' | 'retro-cam';
@@ -131,6 +136,13 @@ export interface ReelConfig {
   clientId?: string;
 }
 
+export interface EditorState {
+  slides: PhotoSlide[];
+  config: ReelConfig;
+  projectId?: string;
+  generatedContentId?: string;
+}
+
 export interface ClientProfile {
   id: string;
   name: string;
@@ -149,3 +161,36 @@ export interface ClientProfile {
   notes?: string;
   createdAt: string;
 }
+
+export interface AIContentScene {
+  sceneNumber: number;
+  duration: number;
+  visualDescription: string;
+  narration: string;
+  onScreenText: string;
+}
+
+export interface AIContentResponse {
+  title: string;
+  hook: string;
+  shortDescription: string;
+  fullScript: string;
+  scenes: AIContentScene[];
+  caption: string;
+  hashtags: string;
+  voiceoverScript: string;
+  suggestedDuration: number;
+}
+
+export interface AIContentRequest {
+  userId: string;
+  businessId?: string;
+  projectId?: string;
+  topic: string;
+  contentType: string;
+  targetPlatform: string;
+  targetAudience: string;
+  tone: string;
+  businessContext?: Partial<ClientProfile>;
+}
+

@@ -2,14 +2,68 @@ import express from "express";
 import path from "path";
 import dotenv from "dotenv";
 import { GoogleGenAI } from "@google/genai";
+import { createClient } from "@supabase/supabase-js";
+
+declare global {
+  namespace Express {
+    interface Request {
+      user?: { id: string; [key: string]: unknown };
+    }
+  }
+}
 
 dotenv.config();
 
 const app = express();
 const PORT = 3000;
 
+// Initialize Supabase Server Client
+// Using SERVICE_ROLE_KEY allows the server to verify ownership and manage assets 
+// regardless of RLS, while we manually enforce the user_id check in the logic.
+const supabaseUrl = process.env.SUPABASE_URL || "";
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || "";
+const serverSupabase = supabaseUrl && supabaseServiceRoleKey
+  ? createClient(supabaseUrl, supabaseServiceRoleKey)
+  : null;
+
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
+
+// Authentication Middleware
+async function requireAuth(req: any, res: any, next: any) {
+  try {
+    if (!serverSupabase) {
+      req.user = { id: '00000000-0000-0000-0000-000000000001' };
+      return next();
+    }
+
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ 
+        success: false, 
+        error: 'Authentication required. Please provide a valid Bearer token.' 
+      });
+    }
+
+    const token = authHeader.split(' ')[1];
+    // Verify the JWT using Supabase
+    const { data: { user }, error } = await serverSupabase.auth.getUser(token);
+
+    if (error || !user) {
+      return res.status(401).json({ 
+        success: false, 
+        error: 'Invalid or expired session token.' 
+      });
+    }
+
+    // Attach verified user to request
+    req.user = user;
+    next();
+  } catch (error: any) {
+    console.error('Auth middleware error:', error);
+    res.status(500).json({ success: false, error: 'Internal server error during authentication.' });
+  }
+}
 
 // Lazy Gemini client helper
 let aiClient: GoogleGenAI | null = null;
@@ -754,6 +808,130 @@ User instruction: "${msg}"`;
   } catch (error: any) {
     console.error("Error in /api/chat-command:", error);
     res.status(500).json({ success: false, error: error.message || "Command failed" });
+  }
+});
+
+// Cloudinary Upload Signature Endpoint
+app.post('/api/cloudinary/destroy', requireAuth, async (req, res) => {
+  try {
+    const { mediaAssetId } = req.body;
+    const userId = req.user.id;
+
+    if (!mediaAssetId) {
+      return res.status(400).json({ success: false, error: 'Media asset ID is required.' });
+    }
+
+    // 1. Verify ownership by querying the database
+    if (!serverSupabase) {
+      return res.status(503).json({ success: false, error: 'Supabase is not configured on the server.' });
+    }
+
+    const { data: asset, error: dbError } = await serverSupabase
+      .from('media_assets')
+      .select('public_id')
+      .eq('id', mediaAssetId)
+      .eq('user_id', userId)
+      .single();
+
+    if (dbError || !asset) {
+      return res.status(403).json({ 
+        success: false, 
+        error: 'You do not have permission to delete this asset or it does not exist.' 
+      });
+    }
+
+    const publicId = asset.public_id;
+    const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+    const apiKey = process.env.CLOUDINARY_API_KEY;
+    const apiSecret = process.env.CLOUDINARY_API_SECRET;
+
+    if (!publicId || !cloudName || !apiKey || !apiSecret) {
+      return res.status(500).json({
+        success: false,
+        error: 'Cloudinary configuration is missing on the server.',
+      });
+    }
+
+    const timestamp = Math.round(new Date().getTime() / 1000);
+    const crypto = await import('crypto');
+    const signature = crypto
+      .createHmac('sha1', apiSecret)
+      .update(`public_id=${publicId}&timestamp=${timestamp}`)
+      .digest('hex');
+
+    const response = await fetch(
+      `https://api.cloudinary.com/v1_1/${cloudName}/destroy`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          public_id: publicId,
+          api_key: apiKey,
+          timestamp: timestamp,
+          signature: signature,
+        }),
+      }
+    );
+
+    const data = await response.json();
+    if (!response.ok || data.error) {
+      throw new Error(data.error?.message || 'Cloudinary destruction failed');
+    }
+
+    res.json({ success: true, result: data });
+  } catch (error: any) {
+    console.error('Error in /api/cloudinary/destroy:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to destroy Cloudinary asset',
+    });
+  }
+});
+
+app.post('/api/cloudinary/sign-upload', requireAuth, async (req, res) => {
+
+
+
+  try {
+    const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+    const apiKey = process.env.CLOUDINARY_API_KEY;
+    const apiSecret = process.env.CLOUDINARY_API_SECRET;
+
+    if (!cloudName || !apiKey || !apiSecret) {
+      return res.status(500).json({
+        success: false,
+        error: 'Cloudinary credentials are not configured on the server.',
+      });
+    }
+
+    const userId = req.user.id;
+    const timestamp = Math.round(new Date().getTime() / 1000);
+    
+    // Force user-specific folders for security and organization
+    const folder = `kelnix/${userId}`;
+
+    // Construct parameters to sign in alphabetical order
+    const paramsToSign = `folder=${folder}&timestamp=${timestamp}`;
+    const crypto = await import('crypto');
+    const signature = crypto
+      .createHmac('sha1', apiSecret)
+      .update(paramsToSign)
+      .digest('hex');
+
+    res.json({
+      success: true,
+      signature,
+      timestamp,
+      cloudName,
+      apiKey,
+      folder,
+    });
+  } catch (error: any) {
+    console.error('Error in /api/cloudinary/sign-upload:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to generate upload signature',
+    });
   }
 });
 

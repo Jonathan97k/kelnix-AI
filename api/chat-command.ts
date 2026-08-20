@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { getAI, zenJSON } from "./_lib/ai";
+import { requireApiUser } from "./_lib/auth";
 
 function cannedChatReply(message: string): string {
   return `I understood you said: "${message}". Use the buttons above (AI Director / Research / Clients) or ask for a script, research topic, or caption changes and I'll do my best to execute it.`;
@@ -7,6 +8,7 @@ function cannedChatReply(message: string): string {
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "POST") return res.status(405).json({ success: false, error: "Method not allowed" });
+  if (!(await requireApiUser(req, res))) return;
 
   try {
     const { message, context = {} } = req.body || {};

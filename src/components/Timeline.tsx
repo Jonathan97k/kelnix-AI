@@ -100,7 +100,12 @@ export const Timeline: React.FC<TimelineProps> = ({
                 }`}
               >
                 {/* Media Thumbnail (Photo or Video) */}
-                {slide.mediaType === 'video' ? (
+                {slide.isPlaceholder ? (
+                  <div className="w-full h-full flex flex-col items-center justify-center gap-1 bg-gradient-to-br from-slate-800 to-slate-950 px-2 text-center">
+                    <Sparkles className="w-4 h-4 text-emerald-400" />
+                    <span className="text-[9px] text-slate-300">Scene {slide.generatedSceneNumber || index + 1}</span>
+                  </div>
+                ) : slide.mediaType === 'video' ? (
                   <video
                     src={slide.url}
                     className="w-full h-full object-cover pointer-events-none"

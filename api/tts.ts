@@ -1,8 +1,10 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { getAI } from "./_lib/ai";
+import { requireApiUser } from "./_lib/auth";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "POST") return res.status(405).json({ success: false, error: "Method not allowed" });
+  if (!(await requireApiUser(req, res))) return;
 
   try {
     const { text, voiceName = "Kore" } = req.body || {};

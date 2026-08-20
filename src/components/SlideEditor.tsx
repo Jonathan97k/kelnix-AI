@@ -1,6 +1,7 @@
 import React from 'react';
 import { 
-  Type, 
+  Type,
+  Upload,
   Sparkles, 
   Sliders, 
   Move, 
@@ -25,6 +26,7 @@ interface SlideEditorProps {
   slideIndex: number;
   totalSlides: number;
   onUpdate: (partial: Partial<PhotoSlide>) => void;
+  onReplaceMedia: () => void;
 }
 
 const MOTION_OPTIONS: { id: MotionEffect; label: string; desc: string }[] = [
@@ -70,6 +72,7 @@ export const SlideEditor: React.FC<SlideEditorProps> = ({
   slideIndex,
   totalSlides,
   onUpdate,
+  onReplaceMedia,
 }) => {
   const textStyle = slide.textStyle;
   const adj = slide.filterAdjustments || { brightness: 1, contrast: 1, saturation: 1, vignette: 0, blur: 0, warmth: 0 };
@@ -97,6 +100,14 @@ export const SlideEditor: React.FC<SlideEditorProps> = ({
           <h3 className="text-sm font-bold text-white tracking-tight">
             Scene Inspector: #{slideIndex + 1}
           </h3>
+          <button
+            onClick={onReplaceMedia}
+            className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-all"
+            title="Replace Media"
+          >
+            <Upload className="w-3.5 h-3.5" />
+          </button>
+
           <p className="text-[11px] text-slate-400">
             Customize captions, camera motion, filter grading & audio
           </p>
