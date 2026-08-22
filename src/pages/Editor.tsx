@@ -552,6 +552,7 @@ const Editor: React.FC = () => {
             {activeTab === 'slide' && currentSlide && (
               <SlideEditor
                 slide={currentSlide}
+                projectId={projectId}
                 slideIndex={currentSlideIndex}
                 totalSlides={slides.length}
                 onUpdate={(partial) => handleUpdateSlide(currentSlideIndex, partial)}

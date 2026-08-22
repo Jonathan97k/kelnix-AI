@@ -1,8 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { contentToEditorAdapter } from '../src/services/editor/contentToEditorAdapter';
-import { getProjectEditorStorageKey, isEditorState, replaceSlideMedia } from '../src/services/editor/editorState';
+import { createVoiceoverMetadata, getProjectEditorStorageKey, isEditorState, persistVoiceoverFile, removeVoiceoverMetadata, replaceSlideMedia } from '../src/services/editor/editorState';
 import { AIContentResponse } from '../src/types';
+import { decodeBase64, parsePcmAudioInfo, pcmToWavBlob } from '../src/utils/pcmToWav';
 
 const response: AIContentResponse = {
   title: 'Three Scene Story',
@@ -61,5 +62,64 @@ test('rejects malformed editor state values', () => {
   assert.equal(isEditorState(null), false);
   assert.equal(isEditorState({ slides: [], config: {} }), true);
   assert.equal(isEditorState({ slides: 'not-an-array', config: {} }), false);
+});
+
+test('decodes base64 PCM bytes', () => {
+  const encoded = Buffer.from([0, 1, 255, 128]).toString('base64');
+  assert.deepEqual(Array.from(decodeBase64(encoded)), [0, 1, 255, 128]);
+});
+
+test('parses PCM sample rate and defaults safely', () => {
+  assert.deepEqual(parsePcmAudioInfo('audio/pcm;rate=16000'), {
+    sampleRate: 16000,
+    channels: 1,
+    bitsPerSample: 16,
+  });
+  assert.equal(parsePcmAudioInfo('audio/pcm').sampleRate, 24000);
+});
+
+test('wraps PCM bytes in a WAV container', async () => {
+  const pcm = Buffer.from([0, 0, 255, 127]).toString('base64');
+  const blob = pcmToWavBlob(pcm, 'audio/pcm;rate=16000');
+  const bytes = new Uint8Array(await blob.arrayBuffer());
+  assert.equal(blob.type, 'audio/wav');
+  assert.equal(bytes.length, 48);
+  assert.equal(String.fromCharCode(...bytes.slice(0, 4)), 'RIFF');
+  assert.equal(new DataView(bytes.buffer).getUint32(24, true), 16000);
+  assert.deepEqual(Array.from(bytes.slice(44)), [0, 0, 255, 127]);
+});
+
+test('rejects invalid PCM audio', () => {
+  assert.throws(() => pcmToWavBlob('', 'audio/pcm;rate=24000'), /Audio data could not be decoded/);
+  assert.throws(() => pcmToWavBlob(Buffer.from([1]).toString('base64')), /invalid/);
+});
+
+test('maps a saved media asset to scene voiceover metadata', () => {
+  assert.deepEqual(createVoiceoverMetadata({ id: 'audio-1', url: 'https://cdn.example/voice.wav', duration: 2 }, 'Kore', 2.4, 0.8), {
+    voiceoverAssetId: 'audio-1',
+    voiceoverAudioUrl: 'https://cdn.example/voice.wav',
+    voiceoverDuration: 2.4,
+    voiceoverVolume: 0.8,
+    voiceoverVoiceName: 'Kore',
+  });
+});
+
+test('removes only scene voiceover references', () => {
+  assert.deepEqual(removeVoiceoverMetadata(), {
+    voiceoverAssetId: undefined,
+    voiceoverAudioUrl: undefined,
+    voiceoverDuration: undefined,
+    voiceoverVolume: undefined,
+    voiceoverVoiceName: undefined,
+  });
+});
+
+test('keeps upload failure separate from successful generated audio', async () => {
+  await assert.rejects(
+    () => persistVoiceoverFile(new File(['wav'], 'voiceover.wav', { type: 'audio/wav' }), async () => {
+      throw new Error('Cloudinary unavailable');
+    }),
+    /saving it to the Media Library failed/,
+  );
 });
 

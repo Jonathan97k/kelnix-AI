@@ -1,108 +1,105 @@
 import React from 'react';
-import { 
-  Users, 
-  Upload, 
-  MessageSquare,
+import {
+  Home,
+  FolderOpen,
+  Film,
   Globe,
-  Folder,
+  Image,
   BarChart3,
   Settings,
-  Sparkles, 
-  Image, 
-  Moon,
-  Film
+  Sparkles,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 
 interface SidebarProps {
-  isCollapsed: boolean;
-  onToggleCollapse: () => void;
+  isExpanded: boolean;
+  onToggleExpand: () => void;
   onNavigate: (path: string) => void;
   currentPath: string;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ 
-  isCollapsed, 
-  onToggleCollapse, 
-  onNavigate, 
-  currentPath 
+export const Sidebar: React.FC<SidebarProps> = ({
+  isExpanded,
+  onToggleExpand,
+  onNavigate,
+  currentPath,
 }) => {
-  const navItems: Array<{ name: string; icon: React.ComponentType<any>; href: string }> = [
-    { name: 'Dashboard', icon: Users, href: '/dashboard' },
-    { name: 'Create', icon: Upload, href: '/create' },
+  const navItems = [
+    { name: 'Dashboard', icon: Home, href: '/dashboard' },
+    { name: 'Create', icon: Sparkles, href: '/create' },
     { name: 'Editor', icon: Film, href: '/editor' },
     { name: 'Businesses', icon: Globe, href: '/businesses' },
-    { name: 'Content', icon: Folder, href: '/content' },
-    { name: 'Media Library', icon: Image, href: '/media' },
+    { name: 'Content', icon: FolderOpen, href: '/content' },
+    { name: 'Media', icon: Image, href: '/media' },
     { name: 'Analytics', icon: BarChart3, href: '/analytics' },
     { name: 'Settings', icon: Settings, href: '/settings' },
   ];
 
   return (
-    <aside className={`flex-shrink-0 w-16 lg:w-64 bg-slate-900/50 backdrop-blur-sm border-r border-slate-800/50 
-      transition-all duration-300 ${isCollapsed ? 'lg:w-16' : ''} overflow-hidden`}
+    <aside
+      className={`
+        hidden md:flex flex-col h-full bg-[#1A1D27] border-r border-[#2E3140]
+        transition-all duration-300 ease-in-out
+        ${isExpanded ? 'w-[220px]' : 'w-[64px]'}
+      `}
     >
-      <div className="flex items-center justify-between p-4 border-b border-slate-800/50">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-emerald-500 via-teal-500 to-blue-500 p-0.5">
-            <div className="w-full h-full bg-slate-950 rounded-full flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-emerald-400" />
-            </div>
+      {/* Logo */}
+      <div className={`flex items-center h-[48px] border-b border-[#2E3140] ${isExpanded ? 'px-4' : 'px-3 justify-center'}`}>
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg bg-[#6C5CE7] flex items-center justify-center flex-shrink-0">
+            <Sparkles className="w-4 h-4 text-white" />
           </div>
-          <span className={isCollapsed ? 'hidden' : 'text-lg font-bold text-white tracking-tight'}>
-            Kelnix AI
-          </span>
-        </div>
-        <button
-          onClick={onToggleCollapse}
-          className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/50 transition-colors"
-          title="Toggle Sidebar"
-        >
-          {isCollapsed ? (
-            <Users className="w-4 h-4" />
-          ) : (
-            <MessageSquare className="w-4 h-4" />
+          {isExpanded && (
+            <span className="text-sm font-semibold text-[#F0F0F5] whitespace-nowrap">
+              KELNIX AI
+            </span>
           )}
-        </button>
+        </div>
       </div>
 
-      <nav className="mt-6 space-y-1">
-        {navItems.map((item, index) => {
-          const isActive = currentPath === item.href;
+      {/* Navigation */}
+      <nav className="flex-1 py-2 overflow-y-auto">
+        {navItems.map((item) => {
+          const isActive = currentPath === item.href || 
+            (item.href === '/dashboard' && currentPath === '/');
           return (
             <button
-              key={index}
+              key={item.href}
               onClick={() => onNavigate(item.href)}
-              className={`flex items-center gap-3 w-full px-4 py-3 text-left text-base font-medium 
-                transition-all duration-200 ${isActive ? 
-                  'bg-emerald-900/20 text-emerald-300 border-l-4 border-emerald-500' : 
-                  'hover:bg-slate-800/50 hover:text-white'}`}
+              className={`
+                flex items-center w-full transition-all duration-150
+                ${isExpanded ? 'px-4 gap-3' : 'px-0 justify-center'}
+                ${isActive ? 'h-[40px]' : 'h-[36px]'}
+                ${isActive
+                  ? 'bg-[#6C5CE7]/15 text-[#6C5CE7] border-l-[3px] border-[#6C5CE7]'
+                  : 'text-[#8B8FA3] hover:text-[#F0F0F5] hover:bg-[#252833] border-l-[3px] border-transparent'
+                }
+              `}
+              title={isExpanded ? undefined : item.name}
             >
-              {item.icon && (
-                <div className="w-5 h-5 flex items-center justify-center">
-                  <item.icon className="w-4 h-4" />
-                </div>
-              )}
-              {(!isCollapsed) && (
-                <span className="flex-1">{item.name}</span>
-              )}
-              {isActive && !isCollapsed && (
-                <div className="w-2 h-2 bg-emerald-500 rounded-full ml-2" />
+              <item.icon className="w-[18px] h-[18px] flex-shrink-0" />
+              {isExpanded && (
+                <span className="text-[13px] font-medium truncate">{item.name}</span>
               )}
             </button>
           );
         })}
       </nav>
 
-      <div className="mt-auto pb-4 border-t border-slate-800/50">
-        <div className="flex items-center justify-between p-4">
-          <div className="flex items-center gap-2 text-sm">
-            <div className="w-4 h-4 rounded-full bg-emerald-500/20 flex items-center justify-center">
-              <Moon className="w-3 h-3 text-emerald-400" />
-            </div>
-            <span className={isCollapsed ? 'hidden' : 'block'}>Dark Mode</span>
-          </div>
-          <div className="w-2 h-2 bg-slate-400 rounded-full" />
-        </div>
+      {/* Collapse Toggle */}
+      <div className="border-t border-[#2E3140] p-2">
+        <button
+          onClick={onToggleExpand}
+          className="flex items-center justify-center w-full h-[32px] rounded-md text-[#8B8FA3] hover:text-[#F0F0F5] hover:bg-[#252833] transition-colors"
+          title={isExpanded ? 'Collapse sidebar' : 'Expand sidebar'}
+        >
+          {isExpanded ? (
+            <ChevronLeft className="w-4 h-4" />
+          ) : (
+            <ChevronRight className="w-4 h-4" />
+          )}
+        </button>
       </div>
     </aside>
   );

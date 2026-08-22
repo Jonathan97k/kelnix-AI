@@ -935,52 +935,98 @@ app.post('/api/cloudinary/sign-upload', requireAuth, async (req, res) => {
   }
 });
 
-// Facebook Reel Publishing Endpoint (Mock Implementation)
+// Facebook Reel Publishing — Real Graph API Integration
 app.post('/api/facebook/publish-reel', async (req, res) => {
+  const FB_GRAPH = 'https://graph.facebook.com/v21.0';
   try {
     const {
-      clientName,
       pageId,
       pageName,
       accessToken,
       title,
       caption,
-      videoBase64,
-      publishType = 'reel'
+      videoUrl,
+      thumbnailUrl,
     } = req.body;
 
-    // Validate required fields
     if (!accessToken || !pageId) {
       return res.status(400).json({
         success: false,
-        error: 'Facebook access token and page ID are required'
+        error: 'Facebook page access token and page ID are required.',
       });
     }
 
-    // In a real implementation, we would:
-    // 1. Decode the videoBase64 to get the actual video file
-    // 2. Upload it to Facebook Graph API using the access token
-    // 3. Create a post/reel with the caption
-    // 4. Return the actual post URL from Facebook
-    
-    // For now, we'll simulate a successful publish
-    const mockPostId = 1234567890 + Math.floor(Math.random() * 1000000);
-    const mockPostUrl = `https://facebook.com/${pageId}/posts/${mockPostId}`;
-    
-    // Simulate processing delay
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
+    if (!videoUrl) {
+      return res.status(400).json({
+        success: false,
+        error: 'A video URL is required. Upload the video to Cloudinary first, then pass the URL.',
+      });
+    }
+
+    // Step 1: Initiate resumable upload
+    const initRes = await fetch(`${FB_GRAPH}/${pageId}/video_reels`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        upload_phase: 'start',
+        access_token: accessToken,
+        file_url: videoUrl,
+      }),
+    });
+
+    const initData = await initRes.json() as Record<string, unknown>;
+
+    if (!initRes.ok || !initData.video_id) {
+      console.error('Facebook video_reels init failed:', initData);
+      return res.status(initRes.status || 500).json({
+        success: false,
+        error: (initData as any).error?.message || 'Failed to initiate Facebook video upload.',
+      });
+    }
+
+    const videoId = initData.video_id as string;
+
+    // Step 2: Publish
+    const publishBody: Record<string, string> = {
+      access_token: accessToken,
+      video_id: videoId,
+      upload_phase: 'finish',
+    };
+    if (title) publishBody.title = title;
+    if (caption) publishBody.description = caption;
+    if (thumbnailUrl) publishBody.image_url = thumbnailUrl;
+
+    const pubRes = await fetch(`${FB_GRAPH}/${pageId}/video_reels`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(publishBody),
+    });
+
+    const pubData = await pubRes.json() as Record<string, unknown>;
+
+    if (!pubRes.ok) {
+      console.error('Facebook video_reels publish failed:', pubData);
+      return res.status(pubRes.status || 500).json({
+        success: false,
+        error: (pubData as any).error?.message || 'Failed to publish reel to Facebook.',
+      });
+    }
+
+    const postId = pubData.id as string;
+    const postUrl = `https://facebook.com/reels/${postId}`;
+
     res.json({
       success: true,
-      message: `Successfully published to ${pageName}'s Facebook Page!`,
-      postUrl: mockPostUrl,
-      postId: mockPostId.toString()
+      message: `Reel published to ${pageName || pageId}'s Facebook Page.`,
+      postId,
+      postUrl,
+      videoId,
     });
-  } catch (error) {
-    console.error('Error in /api/facebook/publish-reel:', error);
+  } catch (error: any) {
+    console.error('Facebook publish error:', error);
     res.status(500).json({
       success: false,
-      error: error.message || 'Failed to publish to Facebook'
+      error: error.message || 'Failed to publish to Facebook.',
     });
   }
 });

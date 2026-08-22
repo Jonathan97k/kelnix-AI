@@ -27,6 +27,7 @@ import {
   projectService 
 } from '../services/projects/projectService';
 import { contentToEditorAdapter } from '../services/editor/contentToEditorAdapter';
+import { useAuth } from '../contexts/AuthContext';
 
 import { 
   AIContentRequest, 
@@ -73,8 +74,9 @@ const LOADING_STAGES = [
 
 export const CreateContent: React.FC = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   
-  const [userId] = useState<string>('user-123'); 
+  const userId = user?.id || '';
   const [businessId, setBusinessId] = useState<string>('');
   const [projectId, setProjectId] = useState<string>('');
   const [topic, setTopic] = useState<string>('');

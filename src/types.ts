@@ -93,6 +93,11 @@ export interface PhotoSlide {
   textStyle: SlideTextStyle;
   narrationText?: string;
   narrationAudioData?: string; // base64 or generated
+  voiceoverAssetId?: string;
+  voiceoverAudioUrl?: string;
+  voiceoverDuration?: number;
+  voiceoverVolume?: number;
+  voiceoverVoiceName?: string;
   stickers?: Array<{
     id: string;
     type: 'location' | 'date' | 'tag' | 'music-badge' | 'custom-badge';

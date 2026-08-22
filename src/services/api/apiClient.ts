@@ -1,4 +1,6 @@
 import { supabase, isSupabaseConfigured } from '../../lib/supabase';
+import { firebaseAuth, isFirebaseConfigured } from '../../lib/firebase';
+import { onAuthStateChanged } from 'firebase/auth';
 
 export class ApiError extends Error {
   status: number;
@@ -10,15 +12,39 @@ export class ApiError extends Error {
   }
 }
 
-export async function postJson<T>(path: string, body: unknown): Promise<T> {
-  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+async function getAuthHeaders(): Promise<Record<string, string>> {
+  const headers: Record<string, string> = {};
 
+  // Try Firebase first — get ID token from current Firebase user
+  if (isFirebaseConfigured && firebaseAuth.currentUser) {
+    try {
+      const idToken = await firebaseAuth.currentUser.getIdToken();
+      if (idToken) {
+        headers.Authorization = `Bearer ${idToken}`;
+        return headers;
+      }
+    } catch (err) {
+      console.warn('[ApiClient] Failed to get Firebase ID token:', err);
+    }
+  }
+
+  // Fallback to Supabase
   if (isSupabaseConfigured && supabase) {
     const { data: { session } } = await supabase.auth.getSession();
     if (session?.access_token) {
       headers.Authorization = `Bearer ${session.access_token}`;
     }
   }
+
+  return headers;
+}
+
+export async function postJson<T>(path: string, body: unknown): Promise<T> {
+  const authHeaders = await getAuthHeaders();
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...authHeaders,
+  };
 
   let response: Response;
   try {
