@@ -5,5 +5,4 @@ coverage/
 .DS_Store
 *.log
 .env*
-setup-vercel-env.*
 !.env.example
