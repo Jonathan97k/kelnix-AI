@@ -1,7 +1,40 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createHmac } from 'crypto';
 import { createClient } from '@supabase/supabase-js';
-import { getApiUser } from '../lib/auth';
+
+let serverSupabase: any = null;
+let supabaseLoaded = false;
+
+async function getSupabase() {
+  if (supabaseLoaded) return serverSupabase;
+  supabaseLoaded = true;
+  try {
+    const { createClient: createClientFn } = await import('@supabase/supabase-js');
+    serverSupabase = createClientFn(
+      process.env.SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      { auth: { persistSession: false } }
+    );
+    return serverSupabase;
+  } catch {
+    return null;
+  }
+}
+
+async function getApiUser(req: VercelRequest) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader?.startsWith('Bearer ')) return null;
+  const token = authHeader.slice(7);
+  const supabase = await getSupabase();
+  if (!supabase) return null;
+  try {
+    const { data: { user }, error } = await supabase.auth.getUser(token);
+    if (error || !user) return null;
+    return user;
+  } catch {
+    return null;
+  }
+}
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') return res.status(405).json({ success: false, error: 'Method not allowed' });
