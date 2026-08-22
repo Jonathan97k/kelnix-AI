@@ -135,3 +135,4 @@ export async function requireApiUser(req: VercelRequest, res: VercelResponse): P
 
   return user;
 }
+

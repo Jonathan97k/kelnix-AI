@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { getAI, zenJSON } from "./lib/ai";
-import { requireApiUser } from "./lib/auth";
+import { getAI, zenJSON } from "./ai";
+import { requireApiUser } from "./auth";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "POST") return res.status(405).json({ success: false, error: "Method not allowed" });
@@ -114,3 +114,4 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     res.status(500).json({ success: false, error: error.message || "Internal server error" });
   }
 }
+

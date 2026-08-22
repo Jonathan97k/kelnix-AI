@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { getAI, zenJSON, cannedReelScript } from "./lib/ai";
-import { requireApiUser } from "./lib/auth";
+import { getAI, zenJSON, cannedReelScript } from "./ai";
+import { requireApiUser } from "./auth";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "POST") return res.status(405).json({ success: false, error: "Method not allowed" });
@@ -89,3 +89,4 @@ Return strict JSON with the following structure:
     res.status(500).json({ success: false, error: error.message || "Failed to generate reel script" });
   }
 }
+

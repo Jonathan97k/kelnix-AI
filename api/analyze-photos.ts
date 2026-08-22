@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { getAI } from "./lib/ai";
-import { requireApiUser } from "./lib/auth";
+import { getAI } from "./ai";
+import { requireApiUser } from "./auth";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "POST") return res.status(405).json({ success: false, error: "Method not allowed" });
@@ -76,3 +76,4 @@ Return JSON:
 export const config = {
   api: { bodyParser: { sizeLimit: "50mb" } },
 };
+

@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { getAI, zenJSON } from "./lib/ai";
-import { requireApiUser } from "./lib/auth";
+import { getAI, zenJSON } from "./ai";
+import { requireApiUser } from "./auth";
 
 function cannedChatReply(message: string): string {
   return `I understood you said: "${message}". Use the buttons above (AI Director / Research / Clients) or ask for a script, research topic, or caption changes and I'll do my best to execute it.`;
@@ -103,3 +103,4 @@ User instruction: "${msg}"`;
     res.status(500).json({ success: false, error: error.message || "Command failed" });
   }
 }
+

@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { searchWikipedia, searchDuckDuckGo, searchGoogleNews, generateResearchSummary } from "./lib/research";
-import { requireApiUser } from "./lib/auth";
+import { searchWikipedia, searchDuckDuckGo, searchGoogleNews, generateResearchSummary } from "./research-lib";
+import { requireApiUser } from "./auth";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "POST") return res.status(405).json({ success: false, error: "Method not allowed" });
@@ -41,3 +41,4 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 export const config = {
   maxDuration: 30,
 };
+
