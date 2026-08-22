@@ -1163,10 +1163,18 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
-    console.log(`ReelCraft server running at http://0.0.0.0:${PORT}`);
-  });
+  if (!process.env.VERCEL) {
+    app.listen(PORT, "0.0.0.0", () => {
+      console.log(`ReelCraft server running at http://0.0.0.0:${PORT}`);
+    });
+  }
 }
 
-startServer();
+// Export app for Vercel serverless
+export { app };
+
+// Start server locally
+if (!process.env.VERCEL) {
+  startServer();
+}
 
