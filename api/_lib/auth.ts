@@ -1,54 +1,55 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
-import { initializeApp, cert, getApps, applicationDefault } from 'firebase-admin/app';
-import { getAuth } from 'firebase-admin/auth';
 
 // Supabase setup
 const supabaseUrl = process.env.SUPABASE_URL || '';
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || '';
 const serverSupabase = supabaseUrl && supabaseKey ? createClient(supabaseUrl, supabaseKey) : null;
 
-// Firebase Admin setup
-let firebaseAdminApp: ReturnType<typeof initializeApp> | null = null;
+// Firebase Admin — lazy-loaded to avoid crashing serverless functions
+// when firebase-admin binary deps fail to resolve on Vercel.
+let firebaseAdminApp: any = null;
+let firebaseLoadAttempted = false;
 
-function getFirebaseApp() {
+async function getFirebaseApp() {
   if (firebaseAdminApp) return firebaseAdminApp;
-  if (getApps().length > 0) {
-    firebaseAdminApp = getApps()[0];
-    return firebaseAdminApp;
-  }
+  if (firebaseLoadAttempted) return null;
+  firebaseLoadAttempted = true;
 
-  const serviceAccountKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
+  try {
+    const { initializeApp, cert, getApps, applicationDefault } = await import('firebase-admin/app');
 
-  if (serviceAccountKey) {
-    try {
+    if (getApps().length > 0) {
+      firebaseAdminApp = getApps()[0];
+      return firebaseAdminApp;
+    }
+
+    const serviceAccountKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
+
+    if (serviceAccountKey) {
       const serviceAccount = JSON.parse(serviceAccountKey);
       firebaseAdminApp = initializeApp({
         credential: cert(serviceAccount),
       });
       console.log('[Auth] Firebase Admin initialized with service account.');
       return firebaseAdminApp;
-    } catch (err) {
-      console.error('[Auth] Failed to parse FIREBASE_SERVICE_ACCOUNT_KEY:', err);
-    }
-  } else {
-    try {
+    } else {
       firebaseAdminApp = initializeApp({ credential: applicationDefault() });
       console.log('[Auth] Firebase Admin initialized with default credentials.');
       return firebaseAdminApp;
-    } catch (err) {
-      console.warn('[Auth] Firebase Admin not configured. Firebase token verification disabled.');
     }
+  } catch (err) {
+    console.warn('[Auth] Firebase Admin not configured. Firebase token verification disabled.');
+    return null;
   }
-
-  return null;
 }
 
 async function verifyFirebaseToken(token: string): Promise<{ id: string; email?: string } | null> {
-  const app = getFirebaseApp();
+  const app = await getFirebaseApp();
   if (!app) return null;
 
   try {
+    const { getAuth } = await import('firebase-admin/auth');
     const decodedToken = await getAuth(app).verifyIdToken(token);
     return {
       id: decodedToken.uid,
@@ -102,7 +103,12 @@ export async function getApiUser(req: VercelRequest): Promise<ApiUser | null> {
 
 export async function requireApiUser(req: VercelRequest, res: VercelResponse): Promise<ApiUser | false> {
   // If no auth providers are configured, allow through for dev mode
-  if (!serverSupabase && !getApps().length) {
+  if (!serverSupabase && !firebaseLoadAttempted) {
+    const app = await getFirebaseApp();
+    if (!app) {
+      return { id: 'dev-user', provider: 'supabase' };
+    }
+  } else if (!serverSupabase && firebaseLoadAttempted && !firebaseAdminApp) {
     return { id: 'dev-user', provider: 'supabase' };
   }
 

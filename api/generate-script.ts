@@ -49,7 +49,7 @@ Return strict JSON with the following structure:
     if (ai) {
       try {
         const response = await ai.models.generateContent({
-          model: "gemini-3.7-flash",
+          model: "gemini-2.0-flash",
           contents: prompt,
           config: { responseMimeType: "application/json", temperature: 0.8 },
         });

@@ -64,7 +64,7 @@ User instruction: "${msg}"`;
     if (ai) {
       try {
         const response = await ai.models.generateContent({
-          model: "gemini-3.7-flash",
+          model: "gemini-2.0-flash",
           contents: [{ parts: [{ text: prompt }] }],
           config: { responseMimeType: "application/json", temperature: 0.5 },
         });
