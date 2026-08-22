@@ -16,7 +16,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       targetAudience = "Instagram & TikTok",
     } = req.body || {};
 
-    const ai = getAI();
+    const ai = await getAI();
 
     const prompt = `You are a viral social media video director & editor for Instagram Reels, TikTok, and YouTube Shorts.
 

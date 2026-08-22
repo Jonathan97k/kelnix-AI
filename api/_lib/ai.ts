@@ -1,15 +1,33 @@
-import { GoogleGenAI } from "@google/genai";
+// Lazy-load @google/genai to avoid module-level crashes on Vercel
+let GoogleGenAIClass: any = null;
+let aiLoadAttempted = false;
 
-let aiClient: GoogleGenAI | null = null;
+let aiClient: any = null;
 
-export function getAI(): GoogleGenAI | null {
+async function loadGoogleGenAI() {
+  if (GoogleGenAIClass) return true;
+  if (aiLoadAttempted) return false;
+  aiLoadAttempted = true;
+  try {
+    const mod = await import("@google/genai");
+    GoogleGenAIClass = mod.GoogleGenAI;
+    return true;
+  } catch (err) {
+    console.warn("[AI] Failed to load @google/genai:", err);
+    return false;
+  }
+}
+
+export async function getAI(): Promise<any | null> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     console.warn("GEMINI_API_KEY is not set. Using intelligent algorithmic fallbacks.");
     return null;
   }
+  const loaded = await loadGoogleGenAI();
+  if (!loaded || !GoogleGenAIClass) return null;
   if (!aiClient) {
-    aiClient = new GoogleGenAI({
+    aiClient = new GoogleGenAIClass({
       apiKey,
       httpOptions: { headers: { "User-Agent": "aistudio-build" } },
     });

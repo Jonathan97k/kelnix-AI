@@ -12,7 +12,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({ error: "Text is required" });
     }
 
-    const ai = getAI();
+    const ai = await getAI();
     if (!ai) {
       return res.status(503).json({
         success: false,

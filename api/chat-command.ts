@@ -59,7 +59,7 @@ Current app state:
 User instruction: "${msg}"`;
 
     let parsed: any = null;
-    const ai = getAI();
+    const ai = await getAI();
 
     if (ai) {
       try {

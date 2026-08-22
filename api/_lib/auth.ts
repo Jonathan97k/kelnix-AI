@@ -1,13 +1,26 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { createClient } from '@supabase/supabase-js';
 
-// Supabase setup
-const supabaseUrl = process.env.SUPABASE_URL || '';
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || '';
-const serverSupabase = supabaseUrl && supabaseKey ? createClient(supabaseUrl, supabaseKey) : null;
+// Lazy-load @supabase/supabase-js to avoid module-level crashes on Vercel
+let serverSupabase: any = null;
+let supabaseLoaded = false;
+
+async function getSupabase() {
+  if (supabaseLoaded) return serverSupabase;
+  supabaseLoaded = true;
+  try {
+    const { createClient } = await import('@supabase/supabase-js');
+    const supabaseUrl = process.env.SUPABASE_URL || '';
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY || '';
+    if (supabaseUrl && supabaseKey) {
+      serverSupabase = createClient(supabaseUrl, supabaseKey);
+    }
+  } catch (err) {
+    console.warn('[Auth] Failed to load @supabase/supabase-js:', err);
+  }
+  return serverSupabase;
+}
 
 // Firebase Admin — lazy-loaded to avoid crashing serverless functions
-// when firebase-admin binary deps fail to resolve on Vercel.
 let firebaseAdminApp: any = null;
 let firebaseLoadAttempted = false;
 
@@ -62,9 +75,10 @@ async function verifyFirebaseToken(token: string): Promise<{ id: string; email?:
 }
 
 async function verifySupabaseToken(token: string): Promise<{ id: string; email?: string } | null> {
-  if (!serverSupabase) return null;
+  const supabase = await getSupabase();
+  if (!supabase) return null;
 
-  const { data: { user }, error } = await serverSupabase.auth.getUser(token);
+  const { data: { user }, error } = await supabase.auth.getUser(token);
   if (error || !user) return null;
 
   return {
@@ -103,12 +117,13 @@ export async function getApiUser(req: VercelRequest): Promise<ApiUser | null> {
 
 export async function requireApiUser(req: VercelRequest, res: VercelResponse): Promise<ApiUser | false> {
   // If no auth providers are configured, allow through for dev mode
-  if (!serverSupabase && !firebaseLoadAttempted) {
+  const supabase = await getSupabase();
+  if (!supabase && !firebaseLoadAttempted) {
     const app = await getFirebaseApp();
     if (!app) {
       return { id: 'dev-user', provider: 'supabase' };
     }
-  } else if (!serverSupabase && firebaseLoadAttempted && !firebaseAdminApp) {
+  } else if (!supabase && firebaseLoadAttempted && !firebaseAdminApp) {
     return { id: 'dev-user', provider: 'supabase' };
   }
 

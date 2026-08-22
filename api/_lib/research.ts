@@ -171,12 +171,12 @@ ANSWER: A direct 2-4 sentence answer to the question.
 KEY FACTS: 3-5 short bullet points (each starting with "- ").
 BEST SOURCES: 1-3 URLs from the results above that are most relevant.`;
 
-  const ai = getAI();
+  const ai = await getAI();
   if (ai) {
     try {
       const response = await withTimeout(
         ai.models.generateContent({
-          model: "gemini-3.7-flash",
+          model: "gemini-2.0-flash",
           contents: [{ parts: [{ text: prompt }] }],
           config: { temperature: 0.4 },
         }),

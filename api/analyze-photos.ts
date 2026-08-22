@@ -8,7 +8,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     const { images } = req.body || {};
-    const ai = getAI();
+    const ai = await getAI();
 
     if (!ai || !images || !images.length) {
       return res.json({
@@ -48,7 +48,7 @@ Return JSON:
     });
 
     const response = await ai.models.generateContent({
-      model: "gemini-3.7-flash",
+      model: "gemini-2.0-flash",
       contents: { parts },
       config: { responseMimeType: "application/json", temperature: 0.7 },
     });
