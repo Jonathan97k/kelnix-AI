@@ -1,5 +1,5 @@
-import { initializeApp, getApps } from 'firebase/app';
-import { getAuth, GoogleAuthProvider } from 'firebase/auth';
+import { initializeApp, getApps, type FirebaseApp } from 'firebase/app';
+import { getAuth, GoogleAuthProvider, type Auth } from 'firebase/auth';
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY || '',
@@ -16,18 +16,25 @@ export const isFirebaseConfigured = Boolean(
   firebaseConfig.projectId
 );
 
-if (!isFirebaseConfigured) {
+let app: FirebaseApp | null = null;
+let auth: Auth | null = null;
+let provider: GoogleAuthProvider | null = null;
+
+if (isFirebaseConfigured) {
+  try {
+    app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+    auth = getAuth(app);
+    provider = new GoogleAuthProvider();
+    provider.addScope('profile');
+    provider.addScope('email');
+  } catch (err) {
+    console.error('[Kelnix AI] Firebase initialization failed:', err);
+  }
+} else {
   console.warn(
     '[Kelnix AI] Firebase environment variables (VITE_FIREBASE_*) are missing. Firebase auth is disabled.'
   );
 }
 
-// Initialize Firebase only once
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
-
-export const firebaseAuth = getAuth(app);
-export const googleProvider = new GoogleAuthProvider();
-
-// Add scopes for profile and email
-googleProvider.addScope('profile');
-googleProvider.addScope('email');
+export const firebaseAuth = auth;
+export const googleProvider = provider;
