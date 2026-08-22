@@ -6,7 +6,7 @@ export default async function handler(req, res) {
     // Test 1: Can we import lib/auth?
     let authModule;
     try {
-      authModule = await import("../../lib/auth");
+      authModule = await import("./lib/auth");
       console.log("[CATCH] auth module loaded:", Object.keys(authModule));
     } catch (e) {
       return res.json({ step: "import_auth", error: e.message, stack: e.stack });
@@ -22,7 +22,7 @@ export default async function handler(req, res) {
 
     // Test 3: Can we import lib/ai?
     try {
-      const aiModule = await import("../../lib/ai");
+      const aiModule = await import("./lib/ai");
       console.log("[CATCH] ai module loaded:", Object.keys(aiModule));
     } catch (e) {
       return res.json({ step: "import_ai", error: e.message, stack: e.stack });
