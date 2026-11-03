@@ -1,168 +1,51 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { useState, useCallback } from 'react';
-import { AuthProvider } from './contexts/AuthContext';
-import { ProtectedRoute, PublicOnlyRoute } from './components/auth/ProtectedRoute';
-import { Login } from './pages/auth/Login';
-import { Signup } from './pages/auth/Signup';
-import MainLayout from './components/layout/MainLayout';
-import Dashboard from './pages/Dashboard';
-import Editor from './pages/Editor';
-import Media from './pages/Media';
-import { CreateContent } from './pages/CreateContent';
-import Businesses from './pages/Businesses';
-import Content from './pages/Content';
-import Analytics from './pages/Analytics';
-import Settings from './pages/Settings';
-import { CommandChat } from './components/CommandChat';
-import { PhotoSlide, ReelConfig } from './types';
+import { useMemo, useState } from 'react';
+import { ArrowDownRight, ArrowRight, Bookmark, Check, ChevronDown, Download, FileText, Menu, Search, ShieldCheck, Sparkles, X } from 'lucide-react';
 
+type Product = { id:number; title:string; category:string; description:string; detail:string; price:string; format:string; tag:string; tone:string; };
+const products: Product[] = [
+  { id:1, title:'The Small Business Launch Kit', category:'Business', description:'A practical starting point for planning, positioning and launching a small business.', detail:'A structured toolkit covering business goals, customer profiles, a simple launch plan and weekly action sheets. The final downloadable PDF is being prepared.', price:'Coming soon', format:'PDF toolkit', tag:'Business essentials', tone:'peach' },
+  { id:2, title:'The Personal Finance Reset', category:'Money', description:'A clear framework for organising income, spending, savings and financial goals.', detail:'Includes a monthly budget, expense tracker, savings planner and reflection prompts. The final downloadable PDF is being prepared.', price:'Coming soon', format:'PDF planner', tag:'Money habits', tone:'mint' },
+  { id:3, title:'The Job Search Toolkit', category:'Career', description:'Organise your applications and prepare more deliberately for your next opportunity.', detail:'A practical collection of job application trackers, interview preparation prompts and CV review checklists. The final downloadable PDF is being prepared.', price:'Coming soon', format:'PDF workbook', tag:'Career growth', tone:'lilac' },
+  { id:4, title:'The AI Productivity Playbook', category:'Productivity', description:'Use everyday AI tools to plan work, write better and reduce repetitive tasks.', detail:'A beginner-friendly guide with reusable prompts, workflows and responsible-use checklists. The final downloadable PDF is being prepared.', price:'Coming soon', format:'PDF guide', tag:'Work smarter', tone:'blue' },
+  { id:5, title:'The Content Planning Workbook', category:'Marketing', description:'Build a repeatable content routine with ideas, calendars and campaign planning.', detail:'Includes audience prompts, content pillars, a publishing calendar and post-performance review sheets. The final downloadable PDF is being prepared.', price:'Coming soon', format:'PDF workbook', tag:'Marketing tools', tone:'yellow' },
+  { id:6, title:'The Freelance Business Planner', category:'Business', description:'Bring your services, pricing, client workflow and weekly priorities into one plan.', detail:'A practical planner for independent service providers preparing to organise and grow their work. The final downloadable PDF is being prepared.', price:'Coming soon', format:'PDF planner', tag:'Independent work', tone:'coral' },
+];
+const categories = ['All products','Business','Money','Career','Productivity','Marketing'];
 function App() {
-  const [showChat, setShowChat] = useState(false);
-  const [chatProps, setChatProps] = useState({
-    slideCount: 0,
-    theme: '',
-    tone: '',
-    aspectRatio: '9:16',
-    title: '',
-  });
-
-  const toggleChat = useCallback(() => setShowChat((prev) => !prev), []);
-
-  const updateChatProps = useCallback((props: Partial<typeof chatProps>) => {
-    setChatProps((prev) => ({ ...prev, ...props }));
-  }, []);
-
-  const chatPanel = (
-    <CommandChat
-      slideCount={chatProps.slideCount}
-      theme={chatProps.theme}
-      tone={chatProps.tone}
-      aspectRatio={chatProps.aspectRatio}
-      title={chatProps.title}
-      onApplyScript={(script) => {
-        // Script applied - editor will pick this up via context
-      }}
-      onUpdateConfig={(config) => {
-        // Config updated
-      }}
-      onUpdateSlide={(index, partial) => {
-        // Slide updated
-      }}
-      onBulkEffect={(effect, value) => {
-        // Bulk effect applied
-      }}
-    />
-  );
-
-  return (
-    <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path='/login' element={<PublicOnlyRoute><Login /></PublicOnlyRoute>} />
-          <Route path='/signup' element={<PublicOnlyRoute><Signup /></PublicOnlyRoute>} />
-          <Route path='/' element={
-            <ProtectedRoute>
-              <MainLayout
-                rightPanel={chatPanel}
-                showRightPanel={showChat}
-                onToggleRightPanel={toggleChat}
-              >
-                <Dashboard />
-              </MainLayout>
-            </ProtectedRoute>
-          } />
-          <Route path='/dashboard' element={
-            <ProtectedRoute>
-              <MainLayout
-                rightPanel={chatPanel}
-                showRightPanel={showChat}
-                onToggleRightPanel={toggleChat}
-              >
-                <Dashboard />
-              </MainLayout>
-            </ProtectedRoute>
-          } />
-          <Route path='/create' element={
-            <ProtectedRoute>
-              <MainLayout
-                rightPanel={chatPanel}
-                showRightPanel={showChat}
-                onToggleRightPanel={toggleChat}
-              >
-                <CreateContent />
-              </MainLayout>
-            </ProtectedRoute>
-          } />
-          <Route path='/editor' element={
-            <ProtectedRoute>
-              <MainLayout
-                rightPanel={chatPanel}
-                showRightPanel={showChat}
-                onToggleRightPanel={toggleChat}
-              >
-                <Editor />
-              </MainLayout>
-            </ProtectedRoute>
-          } />
-          <Route path='/media' element={
-            <ProtectedRoute>
-              <MainLayout
-                rightPanel={chatPanel}
-                showRightPanel={showChat}
-                onToggleRightPanel={toggleChat}
-              >
-                <Media />
-              </MainLayout>
-            </ProtectedRoute>
-          } />
-          <Route path='/businesses' element={
-            <ProtectedRoute>
-              <MainLayout
-                rightPanel={chatPanel}
-                showRightPanel={showChat}
-                onToggleRightPanel={toggleChat}
-              >
-                <Businesses />
-              </MainLayout>
-            </ProtectedRoute>
-          } />
-          <Route path='/content' element={
-            <ProtectedRoute>
-              <MainLayout
-                rightPanel={chatPanel}
-                showRightPanel={showChat}
-                onToggleRightPanel={toggleChat}
-              >
-                <Content />
-              </MainLayout>
-            </ProtectedRoute>
-          } />
-          <Route path='/analytics' element={
-            <ProtectedRoute>
-              <MainLayout
-                rightPanel={chatPanel}
-                showRightPanel={showChat}
-                onToggleRightPanel={toggleChat}
-              >
-                <Analytics />
-              </MainLayout>
-            </ProtectedRoute>
-          } />
-          <Route path='/settings' element={
-            <ProtectedRoute>
-              <MainLayout
-                rightPanel={chatPanel}
-                showRightPanel={showChat}
-                onToggleRightPanel={toggleChat}
-              >
-                <Settings />
-              </MainLayout>
-            </ProtectedRoute>
-          } />
-          <Route path='*' element={<Navigate to='/dashboard' replace />} />
-        </Routes>
-      </BrowserRouter>
-    </AuthProvider>
-  );
+  const [category,setCategory] = useState('All products');
+  const [query,setQuery] = useState('');
+  const [saved,setSaved] = useState<number[]>([]);
+  const [selected,setSelected] = useState<Product|null>(null);
+  const [mobileOpen,setMobileOpen] = useState(false);
+  const filtered = useMemo(() => products.filter(p => (category==='All products'||p.category===category) && (p.title+' '+p.description+' '+p.category).toLowerCase().includes(query.toLowerCase())),[category,query]);
+  const toggleSaved = (id:number) => setSaved(s => s.includes(id)?s.filter(x=>x!==id):[...s,id]);
+  return <div className="market">
+    <div className="announcement"><span className="announcement-dot"/> A considered collection of practical digital resources <span className="announcement-sep">·</span> New releases are on the way</div>
+    <header className="site-header">
+      <a className="brand" href="#" aria-label="Kelnix Market home"><span className="brand-mark">k.</span><span>KELNIX<span className="brand-light"> MARKET</span></span></a>
+      <nav className={mobileOpen?'nav-links nav-open':'nav-links'}>
+        <a href="#shop" onClick={()=>setMobileOpen(false)}>Explore</a><a href="#about" onClick={()=>setMobileOpen(false)}>Our approach</a><a href="#faq" onClick={()=>setMobileOpen(false)}>FAQs</a>
+      </nav>
+      <div className="header-actions"><button className="saved-link" onClick={()=>{setCategory('All products');setQuery('');document.getElementById('shop')?.scrollIntoView({behavior:'smooth'});}}><Bookmark size={16}/> Saved <span>{saved.length}</span></button><button className="menu-toggle" onClick={()=>setMobileOpen(!mobileOpen)} aria-label="Toggle navigation">{mobileOpen?<X/>:<Menu/>}</button></div>
+    </header>
+    <main>
+      <section className="hero">
+        <div className="hero-copy"><div className="eyebrow"><span/> THE DIGITAL RESOURCE EDIT</div><h1>Good ideas.<br/><em>Better tools.</em><br/>Real progress.</h1><p className="hero-text">Thoughtful digital guides, planners and workbooks designed to help you move from intention to action.</p><div className="hero-actions"><a className="button-primary" href="#shop">Explore the collection <ArrowDownRight size={17}/></a><span className="hero-note"><ShieldCheck size={15}/> Useful resources. Clear purpose.</span></div></div>
+        <div className="hero-art" aria-label="Decorative preview of digital guides"><div className="art-orbit orbit-one"/><div className="art-orbit orbit-two"/><div className="hero-sticker"><Sparkles size={16}/><span>MAKE<br/>IT HAPPEN</span></div><div className="book book-back"><span className="book-kicker">KELNIX / FIELD NOTES</span><span className="book-title">Plan with<br/>purpose.</span><span className="book-lines"/><span className="book-number">VOL. 02 — 2026</span></div><div className="book book-front"><span className="book-kicker">THE PRACTICAL SERIES</span><span className="book-title">Ideas into<br/><i>action.</i></span><span className="book-shape"/><span className="book-number">A BETTER WAY TO BEGIN</span></div><div className="art-caption">TOOLS FOR YOUR NEXT CHAPTER <ArrowDownRight size={14}/></div></div>
+        <div className="hero-bottom"><span>CURATED FOR THE WAY YOU WORK</span><span>01 — 06 <span className="bottom-line"/></span></div>
+      </section>
+      <section className="benefits" id="about"><div><span className="benefit-icon"><FileText size={18}/></span><strong>Made to be useful</strong><p>Practical resources built around real tasks and everyday goals.</p></div><div><span className="benefit-icon"><Download size={18}/></span><strong>Digital by design</strong><p>PDF resources you can keep, revisit and use at your own pace.</p></div><div><span className="benefit-icon"><ShieldCheck size={18}/></span><strong>Clear and considered</strong><p>Simple layouts, focused guidance and no unnecessary clutter.</p></div></section>
+      <section className="shop-section" id="shop"><div className="section-heading"><div><div className="eyebrow"><span/> THE COLLECTION</div><h2>Find your next <em>starting point.</em></h2><p>Browse practical resources for business, money, work and personal growth.</p></div><div className="collection-count">01 <span>/</span> 06 <small>COLLECTIONS IN PROGRESS</small></div></div>
+        <div className="shop-tools"><div className="category-list">{categories.map(c=><button key={c} className={category===c?'category active':'category'} onClick={()=>setCategory(c)}>{c}</button>)}</div><label className="search-box"><Search size={17}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search resources..." aria-label="Search resources"/>{query&&<button onClick={()=>setQuery('')} aria-label="Clear search"><X size={15}/></button>}</label></div>
+        <div className="product-grid">{filtered.map((p,i)=><article className="product-card" key={p.id}><div className={'product-cover '+p.tone}><div className="cover-top"><span>KELNIX MARKET</span><button onClick={()=>toggleSaved(p.id)} aria-label={saved.includes(p.id)?'Remove saved item':'Save item'} className={saved.includes(p.id)?'save-button is-saved':'save-button'}><Bookmark size={17} fill={saved.includes(p.id)?'currentColor':'none'}/></button></div><div className="cover-main"><span className="cover-tag">{p.tag}</span><h3>{p.title}</h3><div className="cover-lines"/><span className="cover-format">{p.format} <ArrowDownRight size={13}/></span></div><span className="cover-index">0{i+1}</span><span className="cover-watermark">K.</span></div><div className="product-info"><div className="product-meta"><span>{p.category}</span><span className="soon-pill">In preparation</span></div><h3>{p.title}</h3><p>{p.description}</p><div className="product-bottom"><span className="product-price">{p.price}</span><button className="details-link" onClick={()=>setSelected(p)}>View details <ArrowRight size={15}/></button></div></div></article>)}</div>
+        {filtered.length===0&&<div className="empty-state"><Search size={24}/><h3>No matching resources</h3><p>Try another search term or category.</p><button onClick={()=>{setQuery('');setCategory('All products')}}>Clear filters</button></div>}
+        <div className="collection-foot"><span>SHOWING {filtered.length.toString().padStart(2,'0')} RESOURCES</span><span>MORE GOOD THINGS ARE IN DEVELOPMENT <ArrowDownRight size={14}/></span></div>
+      </section>
+      <section className="manifesto"><div className="manifesto-mark">“</div><div><div className="eyebrow">A SMALL NOTE FROM US</div><h2>Progress feels better<br/>when the next step is <em>clear.</em></h2><p>Kelnix Market is being built around one simple idea: useful resources should make the work ahead feel more manageable.</p></div><a href="#shop" className="text-link">Explore the collection <ArrowRight size={16}/></a></section>
+      <section className="faq-section" id="faq"><div><div className="eyebrow"><span/> GOOD TO KNOW</div><h2>A few things,<br/><em>answered.</em></h2></div><div className="faq-list"><details><summary>Are the products available to download now?<ChevronDown size={17}/></summary><p>Not yet. The items currently shown are previews of planned resources. We will publish each product only after its final PDF and secure delivery process are ready.</p></details><details><summary>What format will the products come in?<ChevronDown size={17}/></summary><p>The initial collection is being prepared as downloadable PDF guides, planners and workbooks.</p></details><details><summary>Can I access the store from my phone?<ChevronDown size={17}/></summary><p>Yes. Kelnix Market is designed to adapt to mobile, tablet and desktop screens.</p></details><details><summary>How will payments work?<ChevronDown size={17}/></summary><p>Payment options will be announced once the merchant setup and checkout process have been tested. No payment is being collected on this preview.</p></details></div></section>
+    </main>
+    <footer className="site-footer"><a className="brand footer-brand" href="#"><span className="brand-mark">k.</span><span>KELNIX<span className="brand-light"> MARKET</span></span></a><span>Useful things for what comes next.</span><span>© {new Date().getFullYear()} Kelnix Market</span></footer>
+    {selected&&<div className="modal-backdrop" onClick={()=>setSelected(null)}><section className="product-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" onClick={e=>e.stopPropagation()}><button className="modal-close" onClick={()=>setSelected(null)} aria-label="Close details"><X/></button><div className={'modal-cover '+selected.tone}><span>KELNIX MARKET / DIGITAL EDITION</span><strong>{selected.title}</strong><small>{selected.format}</small></div><div className="modal-content"><div className="eyebrow"><span/> {selected.category.toUpperCase()}</div><h2 id="modal-title">{selected.title}</h2><p>{selected.detail}</p><div className="modal-status"><span className="soon-pill">In preparation</span><strong>Not available for purchase yet</strong></div><button className="button-primary modal-button" onClick={()=>setSelected(null)}>Back to collection <ArrowRight size={16}/></button></div></section></div>}
+  </div>;
 }
 export default App;
