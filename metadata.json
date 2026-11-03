@@ -1,6 +1,10 @@
 {
-  "name": "Kelnix AI - Your AI Content Manager",
-  "description": "Create, manage and automate professional social media content with AI-powered tools.",
+  "name": "Kelnix Market",
+  "description": "A curated storefront for practical digital guides, planners, templates and downloadable resources.",
   "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "majorCapabilities": [
+    "DIGITAL_PRODUCT_CATALOGUE",
+    "RESPONSIVE_STOREFRONT",
+    "PRODUCT_SEARCH_AND_CATEGORIES"
+  ]
 }
