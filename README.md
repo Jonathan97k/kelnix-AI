@@ -4,34 +4,36 @@ Kelnix Market is a mobile-first storefront for practical digital products: downl
 
 ## Storefront status
 
-The current launch branch contains the responsive storefront experience and a pre-launch product catalogue. Product cards are intentionally marked as coming soon until the final PDF files, verified checkout route and delivery flow are configured.
+The launch branch contains the responsive storefront experience and a pre-launch product catalogue. Product cards are intentionally marked as coming soon until final PDF files, a verified checkout route and secure delivery are configured.
 
 ## Add or publish products
 
-The initial catalogue is defined in `src/App.tsx` in the `products` array. Each item includes:
+The initial catalogue is defined in `src/App.tsx` in the `products` array. Each item includes its title, description, category, planned launch price, cover style and status label.
 
-- Product title and short description
-- Category and planned launch price
-- Product detail copy and cover-art palette
-- A launch status label
+Before publishing a product for sale:
+1. Upload the final PDF to private object storage.
+2. Configure a payment provider that has verified merchant onboarding and payout support for the seller's actual country.
+3. Verify payments server-side.
+4. Deliver the purchased file through an expiring or authenticated download link.
 
-Before publishing a product for sale, add its final PDF file to an appropriate storage provider, configure a verified payment flow, and connect successful payment to secure file delivery. Do not expose private file-storage credentials or rely on a public PDF URL for paid downloads.
+Do not expose private storage credentials or link directly to paid PDFs from a public catalogue.
 
 ## Local development
 
-**Prerequisites:** Node.js 20 or newer.
+Prerequisite: Node.js 20 or newer.
 
-1. Install dependencies: `npm install`
-2. Copy `.env.example` to `.env.local` only if you are using the retained server/API features.
-3. Configure only the credentials required by the feature being enabled. Never commit API keys, service-role keys, payment secrets or private access tokens.
-4. Run locally: `npm run dev`
-5. Build: `npm run build`
+- Install: `npm install`
+- Start: `npm run dev`
+- Production build: `npm run build`
+- Preview build: `npm run start`
+
+The current storefront is a static Vite application. Legacy AI/API code from the former Kelnix AI application is retained separately and is not part of the active storefront runtime.
 
 ## Launch checklist
 
 - [ ] Replace preview catalogue items with final PDF products.
 - [ ] Upload files to private object storage.
-- [ ] Verify Malawi merchant onboarding and international card acceptance with the chosen payment provider.
+- [ ] Verify Malawi merchant onboarding, international card acceptance and settlement with the chosen payment provider.
 - [ ] Implement server-side payment verification and secure download delivery.
 - [ ] Add terms, privacy, refund and contact information.
 - [ ] Test checkout, mobile layout, download permissions and email delivery end-to-end.
