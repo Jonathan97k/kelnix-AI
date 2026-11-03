@@ -1,168 +1,61 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { useState, useCallback } from 'react';
-import { AuthProvider } from './contexts/AuthContext';
-import { ProtectedRoute, PublicOnlyRoute } from './components/auth/ProtectedRoute';
-import { Login } from './pages/auth/Login';
-import { Signup } from './pages/auth/Signup';
-import MainLayout from './components/layout/MainLayout';
-import Dashboard from './pages/Dashboard';
-import Editor from './pages/Editor';
-import Media from './pages/Media';
-import { CreateContent } from './pages/CreateContent';
-import Businesses from './pages/Businesses';
-import Content from './pages/Content';
-import Analytics from './pages/Analytics';
-import Settings from './pages/Settings';
-import { CommandChat } from './components/CommandChat';
-import { PhotoSlide, ReelConfig } from './types';
+import { useMemo, useState } from 'react';
+import { ArrowRight, BadgeCheck, BookOpen, Check, ChevronDown, Download, FileText, Globe2, Headphones, LayoutTemplate, Menu, Search, ShieldCheck, ShoppingBag, Sparkles, Star, X, Zap } from 'lucide-react';
 
-function App() {
-  const [showChat, setShowChat] = useState(false);
-  const [chatProps, setChatProps] = useState({
-    slideCount: 0,
-    theme: '',
-    tone: '',
-    aspectRatio: '9:16',
-    title: '',
-  });
+type Product = { id:number; title:string; category:string; price:number; oldPrice?:number; description:string; tag?:string; icon:string; color:string; format:string; pages:string; };
+const products: Product[] = [
+  { id:1,title:'The Digital Business Starter Kit',category:'Business',price:12,oldPrice:19,description:'A practical launch system with business planning worksheets, pricing templates and a 30-day action plan.',tag:'BESTSELLER',icon:'🚀',color:'violet',format:'PDF + DOCX',pages:'42 pages' },
+  { id:2,title:'Professional CV & Resume Bundle',category:'Templates',price:7,description:'Modern editable CV layouts, cover letter templates and an application tracker for your next opportunity.',tag:'POPULAR',icon:'📄',color:'blue',format:'DOCX + PDF',pages:'12 templates' },
+  { id:3,title:'Small Business Finance Tracker',category:'Business',price:9,description:'Track sales, expenses, profit and cash flow with a simple spreadsheet built for small businesses.',icon:'📊',color:'green',format:'XLSX',pages:'5 worksheets' },
+  { id:4,title:'AI Productivity Prompt Library',category:'AI & Tech',price:8,description:'A curated prompt collection for research, writing, planning, marketing and everyday productivity.',icon:'✳️',color:'orange',format:'PDF',pages:'120+ prompts' },
+  { id:5,title:'Social Media Content Calendar',category:'Marketing',price:6,description:'Plan a month of content with post ideas, caption frameworks and a reusable publishing calendar.',icon:'📅',color:'pink',format:'PDF + XLSX',pages:'30-day planner' },
+  { id:6,title:'Website Launch Checklist',category:'Guides',price:5,description:'A clear step-by-step checklist for planning, launching and improving a professional business website.',icon:'🌐',color:'cyan',format:'PDF',pages:'18 pages' }
+];
+const categories = ['All products','Business','Templates','AI & Tech','Marketing','Guides'];
+const money = (n:number) => '$' + n.toFixed(2);
 
-  const toggleChat = useCallback(() => setShowChat((prev) => !prev), []);
-
-  const updateChatProps = useCallback((props: Partial<typeof chatProps>) => {
-    setChatProps((prev) => ({ ...prev, ...props }));
-  }, []);
-
-  const chatPanel = (
-    <CommandChat
-      slideCount={chatProps.slideCount}
-      theme={chatProps.theme}
-      tone={chatProps.tone}
-      aspectRatio={chatProps.aspectRatio}
-      title={chatProps.title}
-      onApplyScript={(script) => {
-        // Script applied - editor will pick this up via context
-      }}
-      onUpdateConfig={(config) => {
-        // Config updated
-      }}
-      onUpdateSlide={(index, partial) => {
-        // Slide updated
-      }}
-      onBulkEffect={(effect, value) => {
-        // Bulk effect applied
-      }}
-    />
-  );
-
-  return (
-    <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path='/login' element={<PublicOnlyRoute><Login /></PublicOnlyRoute>} />
-          <Route path='/signup' element={<PublicOnlyRoute><Signup /></PublicOnlyRoute>} />
-          <Route path='/' element={
-            <ProtectedRoute>
-              <MainLayout
-                rightPanel={chatPanel}
-                showRightPanel={showChat}
-                onToggleRightPanel={toggleChat}
-              >
-                <Dashboard />
-              </MainLayout>
-            </ProtectedRoute>
-          } />
-          <Route path='/dashboard' element={
-            <ProtectedRoute>
-              <MainLayout
-                rightPanel={chatPanel}
-                showRightPanel={showChat}
-                onToggleRightPanel={toggleChat}
-              >
-                <Dashboard />
-              </MainLayout>
-            </ProtectedRoute>
-          } />
-          <Route path='/create' element={
-            <ProtectedRoute>
-              <MainLayout
-                rightPanel={chatPanel}
-                showRightPanel={showChat}
-                onToggleRightPanel={toggleChat}
-              >
-                <CreateContent />
-              </MainLayout>
-            </ProtectedRoute>
-          } />
-          <Route path='/editor' element={
-            <ProtectedRoute>
-              <MainLayout
-                rightPanel={chatPanel}
-                showRightPanel={showChat}
-                onToggleRightPanel={toggleChat}
-              >
-                <Editor />
-              </MainLayout>
-            </ProtectedRoute>
-          } />
-          <Route path='/media' element={
-            <ProtectedRoute>
-              <MainLayout
-                rightPanel={chatPanel}
-                showRightPanel={showChat}
-                onToggleRightPanel={toggleChat}
-              >
-                <Media />
-              </MainLayout>
-            </ProtectedRoute>
-          } />
-          <Route path='/businesses' element={
-            <ProtectedRoute>
-              <MainLayout
-                rightPanel={chatPanel}
-                showRightPanel={showChat}
-                onToggleRightPanel={toggleChat}
-              >
-                <Businesses />
-              </MainLayout>
-            </ProtectedRoute>
-          } />
-          <Route path='/content' element={
-            <ProtectedRoute>
-              <MainLayout
-                rightPanel={chatPanel}
-                showRightPanel={showChat}
-                onToggleRightPanel={toggleChat}
-              >
-                <Content />
-              </MainLayout>
-            </ProtectedRoute>
-          } />
-          <Route path='/analytics' element={
-            <ProtectedRoute>
-              <MainLayout
-                rightPanel={chatPanel}
-                showRightPanel={showChat}
-                onToggleRightPanel={toggleChat}
-              >
-                <Analytics />
-              </MainLayout>
-            </ProtectedRoute>
-          } />
-          <Route path='/settings' element={
-            <ProtectedRoute>
-              <MainLayout
-                rightPanel={chatPanel}
-                showRightPanel={showChat}
-                onToggleRightPanel={toggleChat}
-              >
-                <Settings />
-              </MainLayout>
-            </ProtectedRoute>
-          } />
-          <Route path='*' element={<Navigate to='/dashboard' replace />} />
-        </Routes>
-      </BrowserRouter>
-    </AuthProvider>
-  );
+export default function App() {
+  const [category,setCategory] = useState('All products');
+  const [query,setQuery] = useState('');
+  const [cart,setCart] = useState<number[]>([]);
+  const [cartOpen,setCartOpen] = useState(false);
+  const [selected,setSelected] = useState<Product|null>(null);
+  const [checkout,setCheckout] = useState(false);
+  const [mobileMenu,setMobileMenu] = useState(false);
+  const [email,setEmail] = useState('');
+  const [customer,setCustomer] = useState('');
+  const [notice,setNotice] = useState('');
+  const filtered = useMemo(()=>products.filter(p=>(category==='All products'||p.category===category)&& (p.title+' '+p.description+' '+p.category).toLowerCase().includes(query.toLowerCase())),[category,query]);
+  const total = cart.reduce((sum,id)=>sum+(products.find(p=>p.id===id)?.price||0),0);
+  const add = (id:number) => { setCart(c=>[...c,id]); setNotice('Added to your bag'); window.setTimeout(()=>setNotice(''),1800); };
+  const order = () => {
+    const lines = cart.map(id=>{const p=products.find(x=>x.id===id)!;return p.title+' — '+money(p.price)}).join('%0A');
+    const message = encodeURIComponent('Hello Kelnix Market, I would like to order:%0A'+decodeURIComponent(lines)+'%0A%0ATotal: '+money(total)+'%0AName: '+customer+'%0AEmail: '+email);
+    window.open('https://wa.me/265882986170?text='+message,'_blank','noopener,noreferrer');
+  };
+  return <div className="market-shell">
+    <div className="announcement"><Sparkles size={13}/> Useful digital products. Instant access after purchase. <span>Explore the collection <ArrowRight size={12}/></span></div>
+    <header className="site-header">
+      <a className="brand" href="#"><span className="brand-mark"><Zap size={19} fill="currentColor"/></span><span>KELNIX<span className="brand-light"> MARKET</span><small>THE DIGITAL GOODS STORE</small></span></a>
+      <nav className={mobileMenu?'nav-links nav-open':'nav-links'}>{['Shop','Business','Templates','AI & Tech','About'].map((n,i)=><a key={n} href={i===0?'#shop':'#categories'} onClick={()=>setMobileMenu(false)}>{n}</a>)}</nav>
+      <div className="header-actions"><button className="icon-button search-shortcut" onClick={()=>document.getElementById('market-search')?.focus()} aria-label="Search"><Search size={19}/></button><button className="bag-button" onClick={()=>setCartOpen(true)}><ShoppingBag size={18}/> <span>Bag</span><b>{cart.length}</b></button><button className="mobile-toggle" onClick={()=>setMobileMenu(!mobileMenu)} aria-label="Menu"><Menu/></button></div>
+    </header>
+    <main>
+      <section className="hero">
+        <div className="hero-copy"><div className="eyebrow"><span/> THE SMARTER WAY TO GET THINGS DONE</div><h1>Digital tools for<br/><em>your next big move.</em></h1><p>Discover practical guides, ready-to-use templates and digital resources designed to help you work smarter and move forward.</p><div className="hero-actions"><a className="primary-button" href="#shop">Explore products <ArrowRight size={17}/></a><div className="trust-note"><ShieldCheck size={16}/> Simple. Practical. Digital.</div></div><div className="hero-proof"><div className="proof-avatars"><span>J</span><span>K</span><span>M</span></div><div><strong>Made to be useful.</strong><small>Resources you can put to work today.</small></div></div></div>
+        <div className="hero-art"><div className="art-glow"/><div className="floating-card card-back"><span className="mini-icon purple">✳</span><small>YOUR NEXT IDEA</small><strong>Make it happen.</strong><div className="fake-lines"><i/><i/><i/></div></div><div className="floating-card card-main"><div className="card-top"><span>YOUR DIGITAL TOOLKIT</span><span className="live-dot"/></div><div className="tool-grid"><div className="tool-tile lilac"><FileText/><b>Guides</b></div><div className="tool-tile mint"><LayoutTemplate/><b>Templates</b></div><div className="tool-tile peach"><BookOpen/><b>Learning</b></div><div className="tool-tile sky"><Sparkles/><b>AI tools</b></div></div><div className="card-bottom"><span><Check size={14}/> Ready when you are</span><span>01 / 04</span></div></div><div className="floating-pill"><span>✦</span> A little more productive</div></div>
+      </section>
+      <section className="benefit-strip"><div><Download/><span><b>Digital delivery</b><small>Built for instant access</small></span></div><div><ShieldCheck/><span><b>Secure checkout</b><small>Payment verification coming next</small></span></div><div><Headphones/><span><b>Human support</b><small>Help when you need it</small></span></div><div><Globe2/><span><b>Made for everyone</b><small>Shop from anywhere</small></span></div></section>
+      <section className="shop-section" id="shop"><div className="section-heading"><div><div className="eyebrow">THE COLLECTION</div><h2>Find your next <em>essential.</em></h2><p>Carefully selected digital resources for work, business and everyday life.</p></div><div className="collection-count">{filtered.length} PRODUCTS <span>·</span> DIGITAL DOWNLOADS</div></div>
+        <div className="shop-controls" id="categories"><div className="category-tabs">{categories.map(c=><button key={c} className={category===c?'active':''} onClick={()=>setCategory(c)}>{c}</button>)}</div><label className="search-box"><Search size={17}/><input id="market-search" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search products..."/><kbd>⌘ K</kbd></label></div>
+        <div className="product-grid">{filtered.map(p=><article className="product-card" key={p.id}><button className="product-visual visual-"+p.color} onClick={()=>setSelected(p)} aria-label={'View '+p.title}><div className="visual-orbit"/><span className="product-emoji">{p.icon}</span><span className="visual-label">KELNIX / DIGITAL</span>{p.tag&&<span className="product-tag">{p.tag}</span>}<span className="visual-open"><ArrowRight size={17}/></span></button><div className="product-info"><div className="product-category">{p.category} <span>·</span> {p.format}</div><button className="product-title" onClick={()=>setSelected(p)}>{p.title}</button><p>{p.description}</p><div className="product-footer"><div className="price">{money(p.price)} {p.oldPrice&&<del>{money(p.oldPrice)}</del>}</div><button className="add-button" onClick={()=>add(p.id)}><span>Add to bag</span><ShoppingBag size={16}/></button></div></div></article>)}</div>
+        {filtered.length===0&&<div className="empty-state">No products match that search. Try another keyword.</div>}
+      </section>
+      <section className="closing-banner"><div className="closing-icon"><Sparkles/></div><div><span className="eyebrow">MAKE YOUR NEXT MOVE</span><h2>Good ideas deserve <em>good tools.</em></h2><p>Find something useful. Put it to work. Keep moving.</p></div><a href="#shop" className="light-button">Browse the store <ArrowRight size={17}/></a></section>
+    </main>
+    <footer><a className="brand footer-brand" href="#"><span className="brand-mark"><Zap size={17} fill="currentColor"/></span><span>KELNIX<span className="brand-light"> MARKET</span><small>THE DIGITAL GOODS STORE</small></span></a><span>© 2026 Kelnix Market. Digital goods, made useful.</span><div><a href="#shop">Shop</a><a href="https://wa.me/265882986170">Contact</a></div></footer>
+    {cartOpen&&<div className="overlay" onMouseDown={e=>{if(e.target===e.currentTarget)setCartOpen(false)}}><aside className="drawer"><div className="drawer-head"><div><span className="eyebrow">YOUR SELECTION</span><h3>Your bag <small>({cart.length})</small></h3></div><button className="icon-button" onClick={()=>setCartOpen(false)}><X/></button></div>{cart.length===0?<div className="empty-cart"><ShoppingBag size={32}/><h4>Your bag is waiting.</h4><p>Add a digital product to get started.</p><button className="primary-button" onClick={()=>setCartOpen(false)}>Explore products</button></div>:<><div className="cart-items">{cart.map((id,i)=>{const p=products.find(x=>x.id===id)!;return <div className="cart-row" key={i}><span className={'cart-thumb visual-'+p.color}>{p.icon}</span><div className="cart-item-copy"><b>{p.title}</b><small>{p.format}</small><strong>{money(p.price)}</strong></div><button className="remove-button" onClick={()=>setCart(c=>c.filter((_,j)=>j!==i))} aria-label="Remove item"><X size={16}/></button></div>})}</div><div className="cart-summary"><div><span>Subtotal</span><b>{money(total)}</b></div><small>Final payment options will be shown when checkout is connected.</small><button className="primary-button full-button" onClick={()=>setCheckout(true)}>Continue to checkout <ArrowRight size={17}/></button></div></>}</aside></div>}
+    {selected&&<div className="overlay" onMouseDown={e=>{if(e.target===e.currentTarget)setSelected(null)}}><div className="detail-modal"><button className="icon-button modal-close" onClick={()=>setSelected(null)}><X/></button><div className={'detail-art visual-'+selected.color}><span>{selected.icon}</span><small>KELNIX / DIGITAL PRODUCT</small></div><div className="detail-copy"><span className="eyebrow">{selected.category} · {selected.format}</span><h3>{selected.title}</h3><p>{selected.description}</p><div className="detail-facts"><span><FileText size={16}/>{selected.pages}</span><span><Download size={16}/>Digital file</span><span><BadgeCheck size={16}/>Instant access after payment</span></div><div className="detail-buy"><strong>{money(selected.price)}</strong><button className="primary-button" onClick={()=>{add(selected.id);setSelected(null)}}>Add to bag <ShoppingBag size={16}/></button></div></div></div></div>}
+    {checkout&&<div className="overlay" onMouseDown={e=>{if(e.target===e.currentTarget)setCheckout(false)}}><div className="checkout-modal"><button className="icon-button modal-close" onClick={()=>setCheckout(false)}><X/></button><span className="eyebrow">ORDER ENQUIRY</span><h3>Almost yours.</h3><p>Enter your details and we'll prepare your order through our support team. Online payment and automatic file delivery are not activated yet.</p><label>Your name<input value={customer} onChange={e=>setCustomer(e.target.value)} placeholder="Full name" required/></label><label>Email address<input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@example.com" required/></label><div className="checkout-total"><span>Order total</span><b>{money(total)}</b></div><button className="primary-button full-button" disabled={!customer.trim()||!email.includes('@')} onClick={order}>Continue on WhatsApp <ArrowRight size={17}/></button><small className="checkout-note"><ShieldCheck size={14}/> No payment will be taken on this preview.</small></div></div>}
+    {notice&&<div className="toast"><Check size={16}/>{notice}</div>}
+  </div>;
 }
-export default App;
